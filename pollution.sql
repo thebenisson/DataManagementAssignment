@@ -7,7 +7,7 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema pollution
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `pollution` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
+CREATE SCHEMA IF NOT EXISTS `pollution` DEFAULT CHARACTER SET utf8mb4;
 USE `pollution` ;
 
 -- -----------------------------------------------------
@@ -54,7 +54,7 @@ CREATE INDEX `geo+point_idx` ON `pollution`.`stations` (`geo_point` ASC) VISIBLE
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `pollution`.`records` (
   `id` INT NOT NULL,
-  `Date Time` TIMESTAMP NOT NULL,
+  `Date Time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `NOx` FLOAT NULL,
   `NO2` FLOAT NULL,
   `PM10` FLOAT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `pollution`.`records` (
   `Temperature` FLOAT NULL,
   `RH` FLOAT NULL,
   `Air Pressure` FLOAT NULL,
-  `date_start` TIMESTAMP NOT NULL,
+  `date_start` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `date_end` TIMESTAMP NULL,
   `Current` VARCHAR(8) NOT NULL,
   `station` INT NOT NULL,
