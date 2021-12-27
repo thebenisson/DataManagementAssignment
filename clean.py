@@ -44,5 +44,5 @@ print(df[~df['Date Time'].isin(indices)].filter(items=['SiteID', 'Location']))
 df = df[df['Date Time'].isin(indices)]
 
 # save to clean.csv
-df.to_csv('clean.csv')
+df.to_csv('clean.csv', index=False)
 print("Data saved as 'clean.csv'")

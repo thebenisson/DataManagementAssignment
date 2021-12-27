@@ -5,58 +5,55 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+-- -----------------------------------------------------
 -- Schema pollution
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `pollution` DEFAULT CHARACTER SET utf8mb4;
+DROP SCHEMA IF EXISTS `pollution` ;
+
+-- -----------------------------------------------------
+-- Schema pollution
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `pollution` DEFAULT CHARACTER SET utf8mb4 ;
 USE `pollution` ;
 
 -- -----------------------------------------------------
--- Table `pollution`.`instrument_types`
+-- Table `pollution`.`instruments`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `pollution`.`instrument_types` (
-  `id` INT NOT NULL,
-  `name` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`id`))
+DROP TABLE IF EXISTS `pollution`.`instruments` ;
+
+CREATE TABLE IF NOT EXISTS `pollution`.`instruments` (
+  `Instrument Type` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`Instrument Type`))
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table `pollution`.`geo_points`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `pollution`.`geo_points` (
-  `id` INT NOT NULL,
-  `latitude` FLOAT NOT NULL,
-  `longitude` FLOAT NOT NULL,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB;
+CREATE UNIQUE INDEX `Instrument_Type_UNIQUE` ON `pollution`.`instruments` (`Instrument Type` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `pollution`.`stations`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `pollution`.`stations` ;
+
 CREATE TABLE IF NOT EXISTS `pollution`.`stations` (
   `SiteID` INT NOT NULL,
   `Location` VARCHAR(45) NOT NULL,
-  `geo_point` INT NOT NULL,
-  PRIMARY KEY (`SiteID`, `geo_point`),
-  CONSTRAINT `geo_point`
-    FOREIGN KEY (`geo_point`)
-    REFERENCES `pollution`.`geo_points` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
+  PRIMARY KEY (`SiteID`))
 ENGINE = InnoDB;
-
-CREATE INDEX `geo+point_idx` ON `pollution`.`stations` (`geo_point` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
 -- Table `pollution`.`records`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `pollution`.`records` ;
+
 CREATE TABLE IF NOT EXISTS `pollution`.`records` (
-  `id` INT NOT NULL,
-  `Date Time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `Date Time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `NOx` FLOAT NULL,
   `NO2` FLOAT NULL,
+  `NO` FLOAT NULL,
   `PM10` FLOAT NULL,
   `NVPM10` FLOAT NULL,
   `VPM10` FLOAT NULL,
@@ -69,27 +66,45 @@ CREATE TABLE IF NOT EXISTS `pollution`.`records` (
   `Temperature` FLOAT NULL,
   `RH` FLOAT NULL,
   `Air Pressure` FLOAT NULL,
-  `date_start` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `date_end` TIMESTAMP NULL,
-  `Current` VARCHAR(8) NOT NULL,
-  `station` INT NOT NULL,
-  `instrument_type` INT NOT NULL,
+  `DateStart` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `DateEnd` DATETIME NULL,
+  `Current` TINYINT NOT NULL,
+  `SiteID` INT NOT NULL,
+  `Instrument Type` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `instrument_type`
-    FOREIGN KEY (`instrument_type`)
-    REFERENCES `pollution`.`instrument_types` (`id`)
+    FOREIGN KEY (`Instrument Type`)
+    REFERENCES `pollution`.`instruments` (`Instrument Type`)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT `station`
-    FOREIGN KEY (`station`)
+    FOREIGN KEY (`SiteID`)
     REFERENCES `pollution`.`stations` (`SiteID`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
-CREATE INDEX `station_idx` ON `pollution`.`records` (`station` ASC) VISIBLE;
+CREATE INDEX `station_idx` ON `pollution`.`records` (`SiteID` ASC) VISIBLE;
 
-CREATE INDEX `instrument_type_idx` ON `pollution`.`records` (`instrument_type` ASC) VISIBLE;
+CREATE INDEX `instrument_idx` ON `pollution`.`records` (`Instrument Type` ASC) VISIBLE;
+
+
+-- -----------------------------------------------------
+-- Table `pollution`.`geopoints`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `pollution`.`geopoints` ;
+
+CREATE TABLE IF NOT EXISTS `pollution`.`geopoints` (
+  `siteid` INT NOT NULL,
+  `latitude` FLOAT NOT NULL,
+  `longitude` FLOAT NOT NULL,
+  PRIMARY KEY (`siteid`),
+  CONSTRAINT `siteid`
+    FOREIGN KEY (`siteid`)
+    REFERENCES `pollution`.`stations` (`SiteID`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
