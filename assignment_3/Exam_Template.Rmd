@@ -1,0 +1,371 @@
+---
+title: 'Exam Template: Statistical Inference'
+author: "STUDENT ID"
+date: 'Jan 2022: Sep21 run'
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+# do not change these options
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(error = TRUE,comment=NA) # do not edit this line.
+```
+
+# Instructions to students
+
+You should only use the file Exam_template.Rmd provided on blackboard and you should load this file from your scripts folder / directory.
+
+Save this template as your studentID.Rmd; you will upload this file as your submission. Change the information on line 3 of this file – changing the author information to your **student ID**. Do not change the authorship to your name.
+
+Ensure that you save your data into your data folder (as discussed in class). You may use the files mypackages.R and helperFunctions.R from blackboard. If you use these files, do not alter them. If you wish to create additional files for custom functions that you have prepared in advance, make sure that you upload these in addition to your .Rmd file and your compiled output file.
+
+Your should knit this file to a document **Word** format.
+
+Any changes that you make to the data (e.g. variable name changes) should be made entirely within R.
+
+The subsubsections labelled **Answer:** indicate where you should put in your written Answers. The template also provides blank code chunks for you to complete your Answers; you may choose to add additional chunks if required.
+
+```{r libraries, include=FALSE}
+# load required libraries / additional files
+install.packages("corrplot")
+library(corrplot)
+
+```
+
+```{r data}
+# load dataset
+dataset <- read.csv('Jan_2022_Exam_Data.csv')
+
+```
+
+# Data description
+
+
+This dataset is part of a larger dataset that has been collected to help to estimate the price of used cars.
+
+It contains the following variables:
+
+- brand (manufacturer)
+- model (of car)
+- year (of registration of the car)
+- price (in GB pounds)
+- transmission (type of gearbox)
+- mileage (total distance covered by the car)
+- fuelType (type of fuel used by the car)
+- tax (annual cost of vehicle tax)
+- mpg (miles per gallon - a measure of fuel efficiency)
+- engineSize (size of the engine in litres)
+
+
+
+# Question 1: Data Preparation (11 marks)
+
+You are interested in modelling the price of vehicles that have all of the following properties:
+
+- mileage less than 60000
+- Manual transmission
+- Petrol engine (fuelType)
+- Costing less than £200 in annual Vehicle Tax.
+
+Once you have selected the rows of data with these properties, then you must *use your studentID* to select a random sample of 2000 rows of the data to perform the rest of your analysis with.
+
+You should remove any redundant variables (where only one value remains in that variable).
+
+This subset of the data is what you should use for the rest of this assessment. 
+
+
+a. Explain what data preparation is required in order for the data in Jan_2022_Exam_Data.csv to be suitable for this analysis.
+
+**(4 marks)**
+
+### Answer:
+
+
+
+b. Implement the required data preparation in the code chunk below:
+
+**(7 marks)**
+
+### Answer:
+
+```{r dataprep}
+set.seed(2104988)
+
+head(dataset)
+
+rows <- "mileage<6000 & tax<200 & transmission=='Manual' & fuelType=='petrol'"
+focus_dataset <- dataset[.(rows),]
+
+final_dataset <- focus_dataset[complete.cases(focus_dataset),]
+final_dataset <- final_dataset[.(sample(1:5000, 2000))]
+
+```
+
+# Question 2: Exploratory Data Analysis (22 marks)
+
+## Descriptive Statistics
+
+a.	What descriptive statistics would be appropriate for this dataset?  Explain why these are useful in this context.
+
+**(2 marks)**
+
+### Answer: 
+
+
+
+b. Produce those descriptive statistics in the code chunk below:
+
+**(4 marks)**
+
+### Answer:
+
+```{r DescriptiveStats}
+summary(final_dataset)
+
+
+```
+
+c. What have those descriptive statistics told you – and how does this inform the analysis that you would undertake on this data or any additional data cleaning requirements?
+
+**(4 marks)**
+
+### Answer:
+
+
+
+## Exploratory Graphs
+
+d. What exploratory graphs would be appropriate for this dataset? Explain why these are useful in this context.
+
+**(2 marks)**
+
+### Answer:
+
+
+
+e. Now produce those exploratory graphs in the code chunk below:
+
+**(4 marks)**
+
+### Answer:
+
+```{r ExploratoryGraphs}
+par(mfrow = c(2, 2), mar = c(5, 4, 2, 1)) 
+with(final_dataset, plot(price, mileage, main = "price vs mileage"))
+with(final_dataset, plot(price, mpg, main = "price vs mpg"))
+with(final_dataset, plot(price, tax, main = "price vs tax"))
+with(final_dataset, plot(price, engineSize, main = "price vs engineSize"))
+
+
+```
+
+f. Interpret these exploratory graphs.  How do these graphs inform your subsequent analysis?
+
+**(4 marks)**
+
+### Answer:
+
+
+
+## Correlations
+
+g. What linear correlations are present within this data?
+
+**(2 marks)**
+
+### Answer:
+
+
+```{r linearcor}
+corr_matrix <- cor(final_dataset)
+corrplot(corr_matrix, type="lower", order="hclust", tl.col="black", tl.srt=45)
+
+```
+
+# Question 3: Bivariate relationship (14 marks)
+
+a. Which of the potential explanatory variables has the strongest linear relationship with the dependent variable?
+
+**(1 mark)**
+
+### Answer:
+
+
+
+b. Create a linear model to model this relationship.
+
+**(2 marks)**
+
+### Answer:
+
+
+```{r model1}
+ln_model = lm(price ~ mileage + engineType, data=final_dataset) # i'm assuming mileageXenginetype is the answer
+
+model_literal <- as.formula(
+  paste0("price ~ ", round(coefficients(ln_model)[1],2), "", 
+    paste(sprintf(" %+.2f*%s ", 
+                  coefficients(ln_model)[-1],  
+                  names(coefficients(ln_model)[-1])), 
+          collapse="")
+  )
+)
+print(model_literal)
+
+summary(ln_model)
+
+```
+
+c. Explain and interpret the model:
+
+**(3 marks)**
+
+### Answer:
+
+
+
+d. Comment on the performance of this model, including comments on overall model fit and the validity of model assumptions. Include any additional code required for you to make these comments in the code chunk below.
+
+**(4 marks)**
+
+### Answer:
+
+```{r model1performance}
+
+
+
+```
+
+
+## Bootstrap
+
+e. Use bootstrapping on this model to obtain a 95% confidence interval of the estimate of the slope parameter.
+
+**(4 marks)**
+
+### Answer:
+
+```{r bootstrap}
+
+slope_extimator <- function(data, index, formula) {
+  focused_data = data[index, ] 
+  fit <- lm(formula, focused_data)
+  return(summary(fit)${r}.square)
+}
+ 
+
+slope_param_estimate <- boot(
+  dataset,
+  {R}=500
+  statistic=slope_extimator
+  formula=formula(ln_model) 
+)
+
+conf_intv <- boot.ci(slope_param_estimate)
+
+```
+
+
+
+# Question 4: Multivariable relationship (10 marks)
+
+Create a model with all of the appropriate remaining explanatory variables included:
+
+```{r model2}
+mv_model <- lm(price ~ mpg + mileage + engineType + tax) # add the rest
+
+mv_model_literal <- as.formula(
+  paste0("price ~ ", round(coefficients(ln_model)[1],2), "", 
+    paste(sprintf(" %+.2f*%s ", 
+                  coefficients(ln_model)[-1],  
+                  names(coefficients(ln_model)[-1])), 
+          collapse="")
+  )
+)
+print(mv_model_literal)
+
+
+summary(mv_model)
+
+```
+
+a. Explain and interpret the model:
+
+**(4 marks)**
+
+### Answer:
+
+
+b. Comment on the performance of this model, including comments on overall model fit and the validity of model assumptions. Include any additional code required for you to make these comments in the code chunk below.
+
+**(4 marks)**
+
+### Answer:
+
+
+```{r model2performance}
+
+
+
+```
+
+c. What general concerns do you have regarding this model?
+
+**(2 marks)**
+
+### Answer: 
+
+
+# Question 5: Model simplification (8 marks)
+
+
+a.	What approaches for model simplification would you consider implementing and why?
+
+**(4 marks)**
+
+### Answer:
+
+
+b.	What are the potential advantages of simplifying a model?
+
+**(2 marks)**
+
+### Answer:
+
+
+c.	 What are the potential disadvantages of simplifying a model?
+
+**(2 marks)**
+
+### Answer:
+
+
+# Question 6: Reporting (35 marks)
+
+A client is looking to purchase a used Skoda Superb (registration year either 2018 or 2019, manual transmission, petrol engine) and wants to understand what factors influence the expected price of a used car, (and how they influence the price). 
+
+Write a short report of 300-500 words for the client. 
+
+Furthermore, include an explanation as to which model you would recommend, and why you have selected that model. 
+
+Comment on any suggestions for alterations to the model that would be appropriate to consider. 
+
+Highlight what may or may not be directly transferable from the scenario analysed in Questions 1 to 5. 
+
+
+### Answer:
+
+
+
+
+
+
+# Session Information
+
+Do not edit this part. Make sure that you compile your document so that the information about your session (including software / package versions) is included in your submission.
+
+```{r}
+sessionInfo()
+```

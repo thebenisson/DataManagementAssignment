@@ -27,22 +27,23 @@ stations = {
 }
 
 # print out entries without SiteIDs of no Locations for specified SiteIDs
-print('entries without SiteIDs of no Locations for specified SiteIDs')
-print(df[df.SiteID.isnull() | ~df.SiteID.isin(stations.keys())].filter(items=['SiteID', 'Location']))
+print('\nEntries without SiteIDs or Locations for specified SiteIDs')
+print(df[df.SiteID.isnull() | ~df.SiteID.isin(stations.keys()) ].filter(items=['SiteID', 'Location']))
 
 # filter null SiteIDs and siteIDs not in stations
 df = df[df.SiteID.notnull() & df.SiteID.isin(stations.keys())]
 
 # gather 'index' on all entries where siteID doesn't match location
-indices = [ index for index, SiteID, Location in np.array(df[['Date Time', 'SiteID', 'Location']]) if stations[SiteID]==Location ]
+indices = [ index for index, SiteID, Location in df[['SiteID', 'Location']].itertuples(index=True, name=None) if stations[SiteID]==Location ]
 
 # print out site mismatches
-print('SiteID and Location mismatches')
-print(df[~df['Date Time'].isin(indices)].filter(items=['SiteID', 'Location']))
+print('\nSiteID and Location mismatches')
+print(df[~df.index.isin(indices)].filter(items=['SiteID', 'Location']))
 
 # filter entries whose indices are in the collected 'Date Time' indices
-df = df[df['Date Time'].isin(indices)]
+df = df[df.index.isin(indices)]
 
-# save to clean.csv
+# save to clean.csvclear
+
 df.to_csv('clean.csv', index=False)
-print("Data saved as 'clean.csv'")
+print("\nData saved as 'clean.csv'\n")

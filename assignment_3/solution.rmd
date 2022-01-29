@@ -1,0 +1,161 @@
+---
+title: Exam Outline
+author: 2104988
+output: html_document
+---
+
+# Question 1
+
+## Descriptive Statistics
+
+a) What descriptive statistics would be appropriate for this dataset?  
+I don't know. mins? maxes? percentiles?  
+
+b) Implement those descriptive statistics in the code chunk below:  
+```{r} 
+# set the path to the directory to the csv files
+setcwd('path/to/dataset_dir')
+
+# read data into memory
+dataset <- read.csv('hsfe.csv', sep=' ') # sep=' ' because the csv is space delimited
+
+head(dataset)     # peep into data, always a good idea
+
+str(dataset)       # Provides the structure of the dataset
+
+summary(dataset)   # basic descriptive statistics and frequencies.
+
+# u can use this instead of summary:
+# fivenum(dataset)
+
+# you can also use the psych package as follows
+# to view statistics like: item name ,item number, nvalid,
+# mean, sd, median, mad, min, max, skew, kurtosis, se 
+#
+# library(psych)
+# describe(dataset)
+
+```
+c) What have those descriptive statistics told you?  
+Once again I don't know
+
+## Exploratory graphs
+d) What exploratory graphs would be appropriate for this dataset?  
+IDK. histograms? scatterplots?
+
+e) Implement those exploratory graphs in the code chunk below
+```{r}
+# scatter plots-----------------------------------------------------------
+# this is for a single scatter plot. replace 'column_name' with
+# names of the actual columns you want to plot. the third arg 
+# is optional... it's just used for color coding the plot points
+# according to their relative value in that column, u can as well
+# use an actual color though it will affect all the points
+with(dataset, plot(column_name, column_name, col = column_name))
+
+# if you want multiple columns, you can do this
+par(mfrow = c(1, 2), mar = c(5, 4, 2, 1)) # configure multiple plots
+# check out the use of par() from here: https://www.rdocumentation.org/packages/graphics/versions/3.6.2/topics/par
+
+# as usual, set column_name to the respective column names and value with 
+# prefered value in the column to filter the dataset by.-- the subset() is 
+# used to filter the dataset, u can just replace it with the dataset. main
+# is used to set title
+with(subset(dataset, column_name == "value"), plot(column_name, column_name, main = "value"))
+with(subset(dataset, column_name == "value"), plot(column_name, column_name, main = "value"))
+
+# histograms---------------------------------------------------------------
+par(mfrow = c(1, 2), mar = c(5, 4, 2, 1)) # ignore for single plots
+hist(dataset$column_name, col='blue') # histogram of column data over entire dataset
+hist(subset(dataset, column_name == "value")$column_name, col='red') # histogram over subset of data
+```
+
+f) What have those exploratory graphs told you?  
+you will know.
+
+## Correlation
+
+g) What linear correlations are present within this data?  
+once again, idk. I'm adding both inline and code chuck should you want to 
+show the correlation between two measures. Inline --> correlation between column_a and column_b is `{r} cor(dataset$column_a, dataset$column_b)`
+```{r}
+# calculate correlation between column_a and column_b
+correlation <- cor(dataset$column_a, dataset$column_b)
+print(correlation)
+```
+# Question 2
+## Bivariate relationship
+
+a) Which of the potential explanatory variables has the strongest linear relationship with the dependent variable?
+
+b) Create a linear model to model this relationship.
+```{r}
+# step 1: plot dependent value agains explanatory column to show linearity
+plot(exp_col, dep_col, type="n", main="title") # create the base graph
+lines(exp_col, dep_col, type="p") # adds the info onto the graph
+
+# step 2. create linear model
+ln_model = lm(dep_col ~ exp_val, data=dataset)
+
+# step 3: show linear model [the equation]
+formular_literal <- as.formula(
+  paste0("dep_col ~ ", round(coefficients(ln_model)[1],2), "", 
+    paste(sprintf(" %+.2f*%s ", 
+                  coefficients(ln_model)[-1],  
+                  names(coefficients(ln_model)[-1])), 
+          collapse="")
+  )
+)
+print(formular_literal)
+
+#step 4: view information about model
+summary(ln_model)
+```
+
+c) Explain and interpret the model:
+
+d) Comment on the performance of this model.
+
+## Bootstrap
+e) Use bootstrapping on this model to obtain a confidence interval of the estimate of the slope parameter.
+```{r}
+# step 1: install the bootstraping package to ensure it's available and 
+# import it 
+install.packages('boot',dep=TRUE) 
+library(boot)
+
+# step 2: define the funtion to calculate the metric of interest.
+# i'm using correlation
+slope_extimator <- function(data, index, formula) {
+  '''
+  takes a dataframe and an index and returns the correlation between
+  columna and columnb of the rows specified by the vector index.
+  '''
+  # sclice data per vector index
+  focused_data = data[index, ] 
+  
+  #fit the data to the linear model
+  fit <- lm(formula, focused_data)
+
+  # return the correlation
+  return(summary(fit)${r}.square)
+}
+
+# step 3: apply the boot fuction to complete the bootstaping
+set.seed(5) # do this so that your results is reproducible
+slope_param_estimate <- boot(
+  dataset,
+  {R}=500
+  statistic=slope_extimator
+  formula=formula(ln_model) # pass the formular of the model
+)
+
+# step 4: get the confidence interval
+conf_intv <- boot.ci(slope_param_estimate)
+
+```
+
+if you want to do multivariate modeling, do this
+```{r}
+mv_model <- lm(dval~eval1+eval2+eval3...)
+```

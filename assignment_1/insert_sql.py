@@ -5,13 +5,18 @@ from sqlalchemy.orm import sessionmaker
 import pymysql
 import pandas as pd
 
+'''Due to the size of the data being used, it is prudent to 
+remove variables as soon they are no more needed
+'''
+import gc
+
 # define database credentials
 user = 'user' # replace with actual db user
 password = 'password' # replace with db pass
 host = 'localhost' # change to db host
 port = 3306 # change to host port
 
-# name of schema to be created and used in this script. Be careful no db exists on your 
+# name of schema to be created and used by this script. Be careful no db exists on your 
 # server with the same name, such will be dropped and a new on created.
 # don't change it also as it will conflict with the name defined in the SQL script.
 db = 'pollution'
@@ -43,7 +48,7 @@ with open('pollution.sql', 'r') as sqlfile:
 df = pd.read_csv('clean.csv')
 
 # insert data into station table. This table contains data on monitoring sites
-stations = df.filter(items=['SiteID', 'Location']).drop_duplicates(subset='SiteID')
+stations = df.filter(items=['SiteID', 'Location', 'geo_point_2d']).drop_duplicates(subset='SiteID')
 stations.SiteID = stations.SiteID.astype('int64')
 print('\ninserting data into stations table...')
 try:
@@ -53,6 +58,7 @@ except:
   print("Couldn't insert data into stations table.")
 finally:
   del stations
+  gc.collect()
 
 # filter out geolocation data
 geopoints = df.filter(items=["SiteID", "geo_point_2d"]).drop_duplicates(subset='SiteID')
@@ -70,6 +76,7 @@ except:
   print("Couldn't insert data into geopoints table.")
 finally:
   del geopoints
+  gc.collect()
 
 # filter out instrument types
 instru_types = df.filter(items=['Instrument Type']).drop_duplicates()
@@ -82,6 +89,7 @@ except:
   print("Couldn't insert data into instruments table.")
 finally:
   del instru_types
+  gc.collect()
 
 # insert data into records table
 records = df.drop(['Location', 'geo_point_2d'], axis=1)
@@ -97,5 +105,5 @@ try:
 except:
   print("Couldn't insert data into records table.")
 finally:
-  del records
-
+  del records, df
+  gc.collect()
